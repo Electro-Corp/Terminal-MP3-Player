@@ -122,16 +122,28 @@ int main(int argv, char** args){
     char* marquee = (char*)malloc(maxDispLen * sizeof(char));
 
     int marqOffset = 0;
-    for(int i = 0; i < strlen(file.sName); i++){
-        marquee[i] = file.sName[i];
+    // Do we have a name for the song?
+    if(strlen(file.sName) > 0){
+        for(int i = 0; i < strlen(file.sName); i++){
+            marquee[i] = file.sName[i];
+        }
+        for(int i = strlen(file.sName); i < maxDispLen; i++){
+            marquee[i] = ' ';
+        }
+    }else{
+        // Use filename
+        for(int i = 0; i < strlen(file.fName); i++){
+            marquee[i] = file.fName[i];
+        }
+        for(int i = strlen(file.fName); i < maxDispLen; i++){
+            marquee[i] = ' ';
+        }
     }
-    for(int i = strlen(file.sName); i < maxDispLen; i++){
-        marquee[i] = ' ';
-    }
-
+    
     for(int i = 0; i < maxDispLen; i++){
         line[i] = '-';
     }
+
     while(time < length - 1){
         ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
         maxDispLen = w.ws_col / 3;
@@ -207,9 +219,15 @@ void readString(char** dest, uint8_t* src, int offset){
     *dest = tmp;
 }
 
+/*
+
+*/
 void marqueeString(char** marqueeT){
+    // Create modifiable text
     char marquee[strlen(*marqueeT)];
+    // Copy text over
     strcpy(marquee, *marqueeT);
+    // Shift every character by 1 to the right (overflow the most right char to the first one)
     char tmp = marquee[0];
     marquee[0] = marquee[strlen(*marqueeT) - 1];
     for(int i = 1; i < strlen(*marqueeT); i++){
@@ -217,6 +235,7 @@ void marqueeString(char** marqueeT){
         marquee[i] = tmp;
         tmp = tmpcopy;
     }
+    // Copy it back
     strcpy(*marqueeT, marquee);
 }
 
