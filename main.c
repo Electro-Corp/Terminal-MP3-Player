@@ -120,6 +120,7 @@ int main(int argv, char** args){
 
     char* line = (char*)malloc(maxDispLen * sizeof(char));
     char* marquee = (char*)malloc(maxDispLen * sizeof(char));
+    char* maruqeeArtist = (char*)malloc(maxDispLen * sizeof(char));
 
     int marqOffset = 0;
     // Do we have a name for the song?
@@ -137,6 +138,24 @@ int main(int argv, char** args){
         }
         for(int i = strlen(file.fName); i < maxDispLen; i++){
             marquee[i] = ' ';
+        }
+    }
+
+    // Do we have a name for the artist?
+    if(strlen(file.sAuthor) > 0){
+        for(int i = 0; i < strlen(file.sAuthor); i++){
+            maruqeeArtist[i] = file.sAuthor[i];
+        }
+        for(int i = strlen(file.sAuthor); i < maxDispLen; i++){
+            maruqeeArtist[i] = ' ';
+        }
+    }else{
+        // Use filename
+        for(int i = 0; i < strlen(file.fName); i++){
+            maruqeeArtist[i] = file.fName[i];
+        }
+        for(int i = strlen(file.fName); i < maxDispLen; i++){
+            maruqeeArtist[i] = ' ';
         }
     }
     
@@ -165,9 +184,14 @@ int main(int argv, char** args){
         ma_sound_get_cursor_in_seconds(&sound, &time);
         if(time - prevTime > 0.3){ 
             marqueeString(&marquee);
+            marqueeString(&maruqeeArtist);
             prevTime = time;
         }
-        printf("[%s]\n", marquee);    
+        if(((((int)time / 100) / 10) % 10) % 2 == 0){
+            printf("[%s]\n", marquee);    
+        }else{
+            printf("[%s]\n", maruqeeArtist);    
+        }
         printf("[%s] - %d/%d\r", line, (int)time, (int)length);
         printf("\x1b[1A");
         fflush(stdout);
@@ -220,11 +244,13 @@ void readString(char** dest, uint8_t* src, int offset){
 }
 
 /*
+    Shift every char in a string to the right one
 
+    marqueeT: the string to shift
 */
 void marqueeString(char** marqueeT){
     // Create modifiable text
-    char marquee[strlen(*marqueeT)];
+    char *marquee = (char*)malloc(strlen(*marqueeT) * sizeof(char));
     // Copy text over
     strcpy(marquee, *marqueeT);
     // Shift every character by 1 to the right (overflow the most right char to the first one)
@@ -245,6 +271,9 @@ void help(){
     exit(-1);
 }
 
+/*
+    Make sure we reset the terminal stuff so its not messed up
+*/
 void interrupted(int signal){
     if(signal == SIGSEGV) printf("Segmentation Fault!\n");  
     cleanExit();
