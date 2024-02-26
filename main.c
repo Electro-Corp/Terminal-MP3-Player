@@ -13,6 +13,7 @@
 #include "miniaudio.h"
 
 // There's some reason i made a struct for this but im not sure
+// maybe ill add a queue/playlist system at some point
 typedef struct{
     char* fName;
     char* sName;
@@ -70,7 +71,6 @@ int main(int argv, char** args){
         headerReadOffset++;
     }
 
-
     // Header
 
     // Song name
@@ -100,7 +100,7 @@ int main(int argv, char** args){
         exit(-1);
     }
 
-    result = ma_sound_init_from_file(&engine, args[1], 0, NULL, NULL, &sound);
+    result = ma_sound_init_from_file(&engine, args[1], MA_SOUND_FLAG_NO_PITCH, NULL, NULL, &sound);
     if (result != MA_SUCCESS) {
         printf("Failed to play sound!\n");
         exit(-1);
@@ -187,12 +187,13 @@ int main(int argv, char** args){
             marqueeString(&maruqeeArtist);
             prevTime = time;
         }
-        if(((((int)time / 100) / 10) % 10) % 2 == 0){
+        if((((int)time / 10) % 10) % 2 == 0){
             printf("[%s]\n", marquee);    
         }else{
             printf("[%s]\n", maruqeeArtist);    
         }
         printf("[%s] - %d/%d\r", line, (int)time, (int)length);
+
         printf("\x1b[1A");
         fflush(stdout);
         
@@ -204,6 +205,8 @@ int main(int argv, char** args){
         }
         ma_sound_get_cursor_in_seconds(&sound, &time);
     }
+
+    
 
     free(line);
     free(marquee);
@@ -280,6 +283,7 @@ void interrupted(int signal){
 }
 
 void cleanExit(){
+    printf("\x1b[2B");
     printf("\e[?25h");
     exit(0);
 }
